@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	todo "todo-app"
 )
@@ -11,6 +12,10 @@ type Authorization interface {
 }
 
 type TodoList interface {
+	Create(userId int, list todo.TodoList) (int, error)
+	GetAll(userId int) ([]todo.TodoList, error)
+	GetById(userId, listId int) (todo.TodoList, error)
+	Delete(userId, listId int) error
 }
 
 type TodoItem interface {
@@ -25,5 +30,14 @@ type Repository struct {
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
+		TodoList:      NewTodoListPostgres(db),
 	}
+}
+
+func (r *TodoListPostgres) Delete(userId, listId int) error {
+	query := fmt.Sprintf("DELETE FROM %s tl USING %s ul WHERE tl.id = ul.list_id AND ul.user_id=$1 AND ul.list_id=$2",
+		todoListsTable, usersListsTable)
+	_, err := r.db.Exec(query, userId, listId)
+
+	return err
 }
