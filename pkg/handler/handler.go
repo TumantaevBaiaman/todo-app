@@ -44,6 +44,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			items.PUT("/:id", h.updateItem)
 			items.DELETE("/:id", h.deleteItem)
 		}
+
 	}
 	return router
 }
